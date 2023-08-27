@@ -40,8 +40,8 @@ else:
 
 def extract_links(message_text):
     # Use regular expressions to find links and magnet links in the message
-    link_pattern = r'^(?!\/)(rtmps?:\/\/|mms:\/\/|rtsp:\/\/|https?:\/\/|ftp:\/\/)?([^\/:]+:[^\/@]+@)?(www\.)?(?=[^\/:\s]+\.[^\/:\s]+)([^\/:\s]+\.[^\/:\s]+)(:\d+)?(\/[^#\s]*[\s\S]*)?(\?[^#\s]*)?(#.*)?$'
-    magnet_pattern = r'magnet:\?xt=urn:(btih|btmh):[a-zA-Z0-9]*\s*'
+    link_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    magnet_pattern = r'magnet:\?xt=urn:btih:[a-fA-F0-9]+&.*'
     
     links = []
     
