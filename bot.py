@@ -38,15 +38,21 @@ else:
     )
     logger.info("Bot started using Bot Token")
 
-
-def extract_link(message_text):
-    # Use regular expression to find links in the message
+def extract_links(message_text):
+    # Use regular expressions to find links and magnet links in the message
     link_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    match = re.search(link_pattern, message_text)
-    if match:
-        return match.group(0)
-    return None
-
+    magnet_pattern = r'magnet:\?xt=urn:btih:[a-fA-F0-9]+'
+    
+    links = []
+    
+    # Find all links and magnet links in the message
+    matches_link = re.findall(link_pattern, message_text)
+    matches_magnet = re.findall(magnet_pattern, message_text)
+    
+    links.extend(matches_link)
+    links.extend(matches_magnet)
+    
+    return links
 
 @app.on_message(filters.channel)
 async def forward(client, message):
@@ -60,19 +66,21 @@ async def forward(client, message):
 
             if message.chat.id == int(source_channel):
                 source_message = await client.get_messages(int(source_channel), message.id)
-                extracted_link = extract_link(source_message.text)
+                extracted_links = extract_links(source_message.text)
 
-                if extracted_link:
-                    modified_message_text = f"{prefix} {extracted_link} {suffix}".strip(
-                    )
+                if extracted_links:
+                    for link in extracted_links:
+                        modified_message_text = f"{prefix} {link} {suffix}".strip()
 
-                    for destination in destinations:
-                        await client.send_message(chat_id=int(destination), text=modified_message_text)
-                        await asyncio.sleep(5)
+                        for destination in destinations:
+                            await client.send_message(chat_id=int(destination), text=modified_message_text)
+                            await asyncio.sleep(5)
 
-                    logger.info("Forwarded a modified message from %s to %s",
-                                source_channel, destinations)
-                    await asyncio.sleep(1)
+                        logger.info("Forwarded a modified message from %s to %s",
+                                    source_channel, destinations)
+                        
+                        # Add a delay before sending the next link
+                        await asyncio.sleep(1)
     except Exception as e:
         logger.exception(e)
 
